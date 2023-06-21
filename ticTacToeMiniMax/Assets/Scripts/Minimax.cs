@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,6 +9,7 @@ public class Minimax : MonoBehaviour
     public enum Player { None, X, O }
     public Player[] board;
     private Player currentPlayer;
+    private int[] scores = { 0, -1, 1 };
 
     // Start is called before the first frame update
     void Start()
@@ -19,7 +21,10 @@ public class Minimax : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+        if (currentPlayer == Player.O)
+        {
+
+        }
     }
 
     private void OnGUI()
@@ -61,49 +66,92 @@ public class Minimax : MonoBehaviour
         currentPlayer = Player.X;
         for (int i = 0; i < 9; i++)
         {
-            Debug.Log(i);
             board[i] = Player.None;
         }
     }
 
     private string GetPlayerSymbol(Player spot)
     {
-        switch (spot) {
+        switch (spot)
+        {
             case Player.X:
                 return "X";
             case Player.O:
                 return "O";
             default:
-                return " ";
+                return "";
         }
     }
 
     private bool CheckGameOver()
     {
-        Player[,] matriz = {
-            { board[0], board[1], board[2] },
-            { board[3], board[4], board[5] },
-            { board[6], board[7], board[8] }
+        /*
+        bool[] array = {
+            // Linhas
+            new Player[]{ board[1], board[2] }.All(s => s == board[0] && s != Player.None),
+            new Player[]{ board[4], board[5] }.All(s => s == board[3] && s != Player.None),
+            new Player[]{ board[7], board[8] }.All(s => s == board[6] && s != Player.None),
+            // Colunas
+            new Player[]{ board[3], board[6] }.All(s => s == board[0] && s != Player.None),
+            new Player[]{ board[4], board[7] }.All(s => s == board[1] && s != Player.None),
+            new Player[]{ board[5], board[8] }.All(s => s == board[2] && s != Player.None),
+            // Diagonais
+            new Player[]{ board[4], board[8] }.All(s => s == board[0] && s != Player.None),
+            new Player[]{ board[4], board[6] }.All(s => s == board[2] && s != Player.None)
+        };
+        */
+
+        //return Array.Find(array, p => p);
+
+
+        return GetWinner() == Player.O;
+    }
+
+    Player GetWinner()
+    {
+        Player[] array1 = {
+            // Linhas
+            new Player[]{ board[1], board[2] }.All(s => s == board[0]) ? board[0] : Player.None,
+            new Player[]{ board[4], board[5] }.All(s => s == board[3]) ? board[3] : Player.None,
+            new Player[]{ board[7], board[8] }.All(s => s == board[6]) ? board[6] : Player.None,
+            // Colunas
+            new Player[]{ board[3], board[6] }.All(s => s == board[0]) ? board[0] : Player.None,
+            new Player[]{ board[4], board[7] }.All(s => s == board[1]) ? board[1] : Player.None,
+            new Player[]{ board[5], board[8] }.All(s => s == board[2]) ? board[2] : Player.None,
+            // Diagonais
+            new Player[]{ board[4], board[8] }.All(s => s == board[0]) ? board[0] : Player.None,
+            new Player[] { board[4], board[6] }.All(s => s == board[2]) ? board[2] : Player.None
         };
 
 
+        return array1.All(p => p == Player.None) ? Player.None : Array.Find(array1, p => p != Player.None);
 
-        Player[] linha1 = { board[0], board[1], board[2] };
+    }
 
-        linha1.Skip(1).All(s => s == linha1[0]);
+    /*
+     ROTINA minimax(nó, profundidade, maximizador)
+        SE nó é um nó terminal OU profundidade = 0 ENTÃO
+            RETORNE o valor da heurística do nó
+        SENÃO SE maximizador é FALSE ENTÃO
+            ? ? +?
+            PARA CADA filho DE nó
+                ? ? min(?, minimax(filho, profundidade-1,true))
+            FIM PARA
+            RETORNE ?
+        SENÃO
+            //Maximizador
+            ? ? -?
+            //Escolher a maior dentre as perdas causadas pelo minimizador
+            PARA CADA filho DE nó
+                ? ? max(?, minimax(filho, profundidade-1,false))
+            FIM PARA
+            RETORNE ?
+        FIM SE
+    FIM ROTINA
+     */
 
-
-        bool[] matriz2 = {
-            new Player[]{ board[1], board[2] }.All(s => s == board[0]),
-            new Player[]{ board[4], board[5] }.All(s => s == board[3]),
-            new Player[]{ board[7], board[8] }.All(s => s == board[6]),
-            new Player[]{ board[3], board[6] }.All(s => s == board[0]),
-            new Player[]{ board[4], board[7] }.All(s => s == board[1]),
-            new Player[]{ board[5], board[8] }.All(s => s == board[2]),
-            new Player[]{ board[4], board[8] }.All(s => s == board[0]),
-            new Player[]{ board[4], board[6] }.All(s => s == board[2])
-        };
-
-        return;
+    int MiniMax(Player player)
+    {
+        return 0;
     }
 }
