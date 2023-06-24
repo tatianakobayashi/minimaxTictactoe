@@ -4,12 +4,13 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UIElements;
+using static Minimax;
 
 public class Minimax : MonoBehaviour
 {
     public enum Player { None, X, O }
     public Player[] board;
-    private Player currentPlayer;
+    [SerializeField] private Player currentPlayer;
     private int[] scores = { 0, -1, 1 };
 
     // Start is called before the first frame update
@@ -26,6 +27,7 @@ public class Minimax : MonoBehaviour
         {
             // TODO ai move
             MakeAIPlay();
+            currentPlayer = Player.X;
         }
     }
 
@@ -87,40 +89,24 @@ public class Minimax : MonoBehaviour
 
     private bool CheckGameOver()
     {
-        /*
-        bool[] array = {
-            // Linhas
-            new Player[]{ board[1], board[2] }.All(s => s == board[0] && s != Player.None),
-            new Player[]{ board[4], board[5] }.All(s => s == board[3] && s != Player.None),
-            new Player[]{ board[7], board[8] }.All(s => s == board[6] && s != Player.None),
-            // Colunas
-            new Player[]{ board[3], board[6] }.All(s => s == board[0] && s != Player.None),
-            new Player[]{ board[4], board[7] }.All(s => s == board[1] && s != Player.None),
-            new Player[]{ board[5], board[8] }.All(s => s == board[2] && s != Player.None),
-            // Diagonais
-            new Player[]{ board[4], board[8] }.All(s => s == board[0] && s != Player.None),
-            new Player[]{ board[4], board[6] }.All(s => s == board[2] && s != Player.None)
-        };
-        */
-
-        //return Array.Find(array, p => p);
-
-
-        return GetWinner() == Player.O || board.All(p => p != Player.None) ;
+        return GetWinner() != Player.None || board.All(b=> b != Player.None);
     }
 
     Player GetWinner()
     {
         int[,] lines1 =
         {
-            {0, 1, 2},
-            {3, 4, 5},
-            {6, 7, 8 },
-            {0, 3, 6 },
-            {1, 4, 7 },
+            // Linhas
+            { 0, 1, 2 },
+            { 3, 4, 5 },
+            { 6, 7, 8 },
+            // Colunas
+            { 0, 3, 6 },
+            { 1, 4, 7 },
             { 2, 5, 8 },
-            {0, 4, 8 },
-            { 2, 4, 6}
+            // Diagonais
+            { 0, 4, 8 },
+            { 2, 4, 6 }
         };
 
         for(int i = 0; i < 8; i++)
@@ -132,25 +118,6 @@ public class Minimax : MonoBehaviour
             }
         }
         return Player.None;
-
-        /*
-        Player[] lines = {
-            // Linhas
-            GetLineResult(0, 1, 2),
-            GetLineResult(3, 4, 5),
-            GetLineResult(6, 7, 8),
-            // Colunas
-            GetLineResult(0, 3, 6),
-            GetLineResult(1, 4, 7),
-            GetLineResult(2, 5, 8),
-            // Diagonais
-            GetLineResult(0, 4, 8),
-            GetLineResult(2, 4, 6)
-        };
-
-
-        return lines.All(p => p == Player.None) ? Player.None : Array.Find(lines, p => p != Player.None);
-        */
     }
 
     Player GetLineResult(int reference, int position1, int position2)
@@ -160,39 +127,47 @@ public class Minimax : MonoBehaviour
 
     void MakeAIPlay()
     {
-        int position = -1;
+        int position = 0;
         for (int i = 0; i < 9; i++)
         {
-            if (board[i] != Player.None && MiniMax(currentPlayer) > 0)
+            //Debug.Log("Make AI Play " + i);
+            if (board[i] == Player.None)
             {
-                position = i;
+                board[i] = Player.O;
+                if (MiniMax(Player.X) == 1)
+                    return;
+                else
+                    board[i] = Player.None;
             }
         }
 
-        if (position > -1) board[position] = Player.O;
     }
 
     int MiniMax(Player player)
     {
+        //Debug.Log("Player " + GetPlayerSymbol(player));
+
         if (CheckGameOver())
             return scores[((int)player)];
 
         int bestScore = (player == Player.O) ? int.MinValue : int.MaxValue;
         for (int i = 0; i < 9; i++)
         {
-            if (board[i] != Player.None)
+            if (board[i] == Player.None)
             {
+                //Debug.Log("board " + i);
+
                 board[i] = player;
-                int minimax = MiniMax((player == Player.O) ? Player.X : Player.O);
 
                 if (player == Player.O)
-                    bestScore = Mathf.Max(bestScore, minimax);
+                    bestScore = Mathf.Max(bestScore, MiniMax(Player.X));
                 else
-                    bestScore = Mathf.Min(bestScore, minimax);
+                    bestScore = Mathf.Min(bestScore, MiniMax(Player.O));
 
                 board[i] = Player.None;
             }
         }
+        //Debug.Log("best score " + bestScore);
 
         return bestScore;
     }
