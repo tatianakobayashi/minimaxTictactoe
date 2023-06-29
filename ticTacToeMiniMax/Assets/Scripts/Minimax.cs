@@ -5,12 +5,13 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.UIElements;
 using static Minimax;
+using Random = System.Random;
 
 public class Minimax : MonoBehaviour
 {
     public enum Player { None, X, O }
     public Player[] board;
-    [SerializeField] private Player currentPlayer;
+    private Player currentPlayer;
     private int[] scores = { 0, -1, 1 };
 
     // Start is called before the first frame update
@@ -25,8 +26,7 @@ public class Minimax : MonoBehaviour
     {
         if (currentPlayer == Player.O && !CheckGameOver())
         {
-            // TODO ai move
-            MakeAIPlay();
+            MakeAIPlay4();
             currentPlayer = Player.X;
         }
     }
@@ -89,7 +89,7 @@ public class Minimax : MonoBehaviour
 
     private bool CheckGameOver()
     {
-        return GetWinner() != Player.None || board.All(b=> b != Player.None);
+        return GetWinner() != Player.None || board.All( b => b != Player.None);
     }
 
     Player GetWinner()
@@ -130,45 +130,257 @@ public class Minimax : MonoBehaviour
         int position = 0;
         for (int i = 0; i < 9; i++)
         {
-            //Debug.Log("Make AI Play " + i);
             if (board[i] == Player.None)
             {
                 board[i] = Player.O;
-                if (MiniMax(Player.X) == 1)
-                    return;
-                else
-                    board[i] = Player.None;
+
+                int m = MiniMax(Player.X);
+                if (m == 1)
+                {
+                    position = i;
+                    Debug.Log(i);
+                }
+                board[i] = Player.None;
             }
         }
-
+        Debug.Log("p: " + position);
+        board[position] = Player.O;
     }
-
-    int MiniMax(Player player)
+    void MakeAIPlay4()
     {
-        //Debug.Log("Player " + GetPlayerSymbol(player));
-
-        if (CheckGameOver())
-            return scores[((int)player)];
-
-        int bestScore = (player == Player.O) ? int.MinValue : int.MaxValue;
+        int position = 0;
+        List<int> possibilities = new List<int>();
         for (int i = 0; i < 9; i++)
         {
             if (board[i] == Player.None)
             {
-                //Debug.Log("board " + i);
+                board[i] = Player.O;
+                if(GetWinner() == Player.O)
+                {
+                    //Debug.Log("posicao: " + j + " depth: " + depth);
+                    // position = i;
+                    Debug.Log("break");
+                    return;
+                    // Debug.Log("i: " + i + "j: " +  j);
+                }
 
+                int m = MiniMax(Player.X);
+                if (m == 1)
+                {
+                    possibilities.Add(i);
+                    //position = i;
+                    Debug.Log(i);
+                }
+                board[i] = Player.None;
+            }
+        }
+        Debug.Log("p: " + position);
+
+        Random r = new Random();
+        position = r.Next(possibilities.Count);
+
+        board[possibilities[position]] = Player.O;
+    }
+
+    int RandomPosition()
+    {
+        Random random = new Random();
+        while(true)
+        {
+            int i = random.Next(0, board.Length);
+            if (board[i] == Player.None) return i;
+        }
+    }
+
+    void MakeAIPlay2()
+    {
+        string tree = "";
+        int position = -1;
+        int depth = int.MaxValue;
+        for (int i = 0; i < 9; i++)
+        {
+            if (board[i] == Player.None)
+            {
+                board[i] = Player.O;
+
+                tree += "O in " + i + "\nX: ";
+
+
+                if (GetWinner() == Player.O)
+                {
+                    //Debug.Log("posicao: " + j + " depth: " + depth);
+                    position = i;
+                    Debug.Log("break");
+                    break;
+                    // Debug.Log("i: " + i + "j: " +  j);
+                }
+
+
+                for (int j = 0; j < 9; j++) {
+                    if (board[j] == Player.None)
+                    {
+                        board[j] = Player.X;
+
+                        (int, int) m = MiniMax(Player.O, 0);
+                        Debug.Log("m: " + m);
+                        if (m.Item1 == 1 && m.Item2 < depth)
+                        {
+                            Debug.Log("posicao: " + j + " depth: " + depth);
+                            position = j;
+                            depth = m.Item1;
+                            // Debug.Log("i: " + i + "j: " +  j);
+                        }
+
+                        if (CheckGameOver())
+                        {
+                            Debug.Log("i: " + i + " j: " + j + " winner: " + GetPlayerSymbol(GetWinner()) + " m: " + m);
+                        }
+                        tree += j + " = (" + m + ") | ";
+                        board[j] = Player.None;
+                    }
+
+
+                }
+
+                tree += "\n";
+
+                board[i] = Player.None;
+            }
+        }
+
+        if (position < 0) position = RandomPosition();
+        Debug.Log("TREE: " + tree);
+        board[position] = Player.O;
+    }
+
+    void MakeAIPlay3()
+    {
+        int position = -1;
+        int depth = int.MaxValue;
+        for (int i = 0; i < 9; i++)
+        {
+            if (board[i] == Player.None)
+            {
+                board[i] = Player.O;
+
+
+                if (GetWinner() == Player.O)
+                {
+                    //Debug.Log("posicao: " + j + " depth: " + depth);
+                    position = i;
+                    Debug.Log("break");
+                    break;
+                    // Debug.Log("i: " + i + "j: " +  j);
+                }
+
+                (int, int) m = MiniMax(Player.X, 0);
+
+                if (m.Item1 == 1 && m.Item2 < depth)
+                {
+                    Debug.Log("posicao: " + i + " depth: " + depth);
+                    position = i;
+                    depth = m.Item1;
+                    // Debug.Log("i: " + i + "j: " +  j);
+                }
+
+                board[i] = Player.None;
+            }
+        }
+
+        if (position < 0) position = RandomPosition();
+
+        board[position] = Player.O;
+    }
+
+    int MiniMax(Player player)
+    {
+        if (CheckGameOver())
+        {
+            //string[] a = board.Select(GetPlayerSymbol).ToArray();
+
+            //Debug.Log("Game Over: " + string.Join("|", a));
+
+            return scores[((int)player)];
+        }
+
+        int bestScore = (player == Player.O) ? int.MinValue : int.MaxValue;
+
+        string v = "PLAYER " + GetPlayerSymbol(player) + "\n";
+        for (int i = 0; i < 9; i++)
+        {
+            if (board[i] == Player.None)
+            {
                 board[i] = player;
+
+                //Debug.Log(bestScore);
+                v += "POS: " + i + " score: (" + bestScore;
 
                 if (player == Player.O)
                     bestScore = Mathf.Max(bestScore, MiniMax(Player.X));
                 else
                     bestScore = Mathf.Min(bestScore, MiniMax(Player.O));
 
+                v += "|" + bestScore + ")\n";
+
+                //Debug.Log(bestScore);
+
                 board[i] = Player.None;
             }
         }
-        //Debug.Log("best score " + bestScore);
+        Debug.Log(v);
 
         return bestScore;
+    }
+
+    (int, int) MiniMax(Player player, int depth)
+    {
+        if (CheckGameOver())
+        {
+            //string[] a = board.Select(GetPlayerSymbol).ToArray();
+
+            //Debug.Log("Game Over: " + string.Join("|", a));
+
+            return (scores[((int)player)], depth);
+        }
+
+        int bestScore = (player == Player.O) ? int.MinValue : int.MaxValue;
+
+        int maxDepth = int.MaxValue;
+
+        string v = "PLAYER " + GetPlayerSymbol(player) + "\n";
+        for (int i = 0; i < 9; i++)
+        {
+            if (board[i] == Player.None)
+            {
+                board[i] = player;
+
+                //Debug.Log(bestScore);
+                v += "POS: " + i + " score: (" + bestScore;
+
+                if (player == Player.O)
+                {
+                    (int, int) m = MiniMax(Player.X, depth + 1);
+                    if(m.Item1 >= bestScore)
+                        maxDepth = Mathf.Min(maxDepth, m.Item2);
+                    bestScore = Mathf.Max(bestScore, m.Item1);
+                }
+                else
+                {
+                    (int, int) m = MiniMax(Player.O, depth + 1);
+                    if (m.Item1 <= bestScore)
+                        maxDepth = Mathf.Min(maxDepth, m.Item2);
+                    bestScore = Mathf.Min(bestScore, m.Item1);
+                }
+
+                v += "|" + bestScore + ")\n";
+
+                //Debug.Log(bestScore);
+
+                board[i] = Player.None;
+            }
+        }
+        //Debug.Log(v);
+
+        return (bestScore, maxDepth);
     }
 }
