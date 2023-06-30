@@ -340,7 +340,7 @@ public class Minimax : MonoBehaviour
 
             //Debug.Log("Game Over: " + string.Join("|", a));
 
-            return (scores[((int)player)], depth);
+            return (scores[(int)player], depth);
         }
 
         int bestScore = (player == Player.O) ? int.MinValue : int.MaxValue;
