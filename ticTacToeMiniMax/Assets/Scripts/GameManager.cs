@@ -15,11 +15,21 @@ public class GameManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        /*
         currentPlayer = Player.X;
 
         int f = 8;
         int fib = Fibonnacci(f);
         Debug.Log(fib);
+        */
+
+        ContagemRegressiva(10);
+
+        Debug.Log("Soma dos digitos: " + SomaDosDigitos(4123));
+
+        Debug.Log("Reverso: " + Reverso("ABCDE"));
+
+        Debug.Log("Palindromo: " + Palindromo("ANNAB"));
     }
 
     // Update is called once per frame
@@ -58,5 +68,39 @@ public class GameManager : MonoBehaviour
         // Debug.Log(final);
 
         return final;
+    }
+
+    void ContagemRegressiva(int contagem)
+    {
+        if (contagem == 0) Debug.Log("Contagem regressiva finalizada");
+        else
+        {
+            Debug.Log(contagem);
+            ContagemRegressiva(contagem - 1);
+        }
+    }
+
+    int SomaDosDigitos(int numero)
+    {
+        if (numero > 0)
+        {
+            return numero % 10 + SomaDosDigitos(numero / 10);
+        }
+        return 0;
+    }
+
+    string Reverso(string palavra)
+    {
+        if (palavra.Length == 0) return "";
+        int index = palavra.Length - 1;
+        return palavra.Substring(index) + Reverso(palavra.Remove(index));
+    }
+
+    bool Palindromo(string palavra)
+    {
+        if (palavra.Length < 2)
+            return true;
+
+        return palavra.Substring(0, 1).ToLower() == palavra.Substring(palavra.Length - 1).ToLower() && Palindromo(palavra.Substring(1, palavra.Length - 2));
     }
 }
